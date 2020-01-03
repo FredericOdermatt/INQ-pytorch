@@ -5,8 +5,7 @@ import numpy as np
 import torch
 from torch.optim.optimizer import Optimizer
 
-
-class INQScheduler(object):
+class INQScheduler_mbq(object):
     """Handles the the weight partitioning and group-wise quantization stages
     of the incremental network quantization procedure.
 
@@ -47,10 +46,15 @@ class INQScheduler(object):
                 if p.requires_grad is False:
                     group['ns'].append((0, 0))
                     continue
-                s = torch.max(torch.abs(p.data)).item()
-                n_1 = math.floor(math.log((4*s)/3, 2))
-                n_2 = int(n_1 + 1 - (2**(group['weight_bits']-1))/2)
-                group['ns'].append((n_1, n_2))
+                
+                alpha = list()
+                r = p.data.flatten()
+                for i in range(0,group['weight_bits']-1):
+                    a = torch.mean(torch.abs(p.data)).item()
+                    b = torch.sign(p.data)
+                    r = p.data - a * b
+                    alpha.append(a)
+                group['ns'].append(alpha)
 
     def state_dict(self):
         """Returns the state of the scheduler as a :class:`dict`.
@@ -78,24 +82,20 @@ class INQScheduler(object):
                     continue
                 T = group['Ts'][idx]
                 ns = group['ns'][idx]
-                device = p.data.device
-                quantizer = partial(self.quantize_weight, n_1=ns[0], n_2=ns[1])
-                fully_quantized = p.data.clone().cpu().apply_(quantizer).to(device)
+                quantizer = partial(self.quantize_weight, alphas=ns, weight_bits=group['weight_bits'])
+                fully_quantized = p.data.clone().cpu().apply_(quantizer).cuda()
                 p.data = torch.where(T == 0, fully_quantized, p.data)
 
-    def quantize_weight(self, weight, n_1, n_2):
-        """Quantize a single weight using the INQ quantization scheme.
+    def quantize_weight(self, weight, alphas, weight_bits):
+        """Quantize with alternating multibit quant: search the BST
         """
-        alpha = 0
-        beta = 2 ** n_2
-        abs_weight = math.fabs(weight)
         quantized_weight = 0
-
-        for i in range(n_2, n_1 + 1):
-            if (abs_weight >= (alpha + beta) / 2) and abs_weight < (3*beta/2):
-                quantized_weight = math.copysign(beta, weight)
-            alpha = 2 ** i
-            beta = 2 ** (i + 1)
+        for i in range(0,len(alphas)-1):
+            if weight < quantized_weight:
+                quantized_weight -= alphas[i+1]
+            else:
+                quantized_weight += alphas[i+1]
+            
         return quantized_weight
 
     def step(self):
@@ -115,19 +115,19 @@ class INQScheduler(object):
                     else:
                         probability = (self.iterative_steps[self.idx] - self.iterative_steps[self.idx - 1]) / (1 - self.iterative_steps[self.idx - 1])
 
-                    T = group['Ts'][idx]
-                    T_rand = torch.rand_like(p.data)
-                    zeros = torch.zeros_like(p.data)
+                    T = group['Ts'][idx].cuda()
+                    T_rand = torch.rand_like(p.data).cuda()
+                    zeros = torch.zeros_like(p.data).cuda()
                     T = torch.where(T_rand <= probability, zeros, T)
                     group['Ts'][idx] = T
                 else:
-                    zeros = torch.zeros_like(p.data)
-                    ones = torch.ones_like(p.data)
+                    zeros = torch.zeros_like(p.data).cuda()
+                    ones = torch.ones_like(p.data).cuda()
                     quantile = np.quantile(torch.abs(p.data.cpu()).numpy(), 1 - self.iterative_steps[self.idx])
                     T = torch.where(torch.abs(p.data) >= quantile, zeros, ones)
                     group['Ts'][idx] = T
-                    print("Step: {}".format(self.iterative_steps[self.idx]))
-
+                    #print("Step: {}".format(self.iterative_steps[self.idx]))
+        print("Stepped INQ Scheduler")
         self.idx += 1
         self.quantize()
 

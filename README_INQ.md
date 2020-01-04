@@ -40,7 +40,7 @@
    
    pip install -e INQ-pytorch
    
-   cp QuantizedBERT_DeepLearningProject/run_glue_inq.py to /transformers/examples/
+   (probably not necessary) cp QuantizedBERT_DeepLearningProject/run_glue_inq.py to /transformers/examples/
    
    pip install -r transformers/examples/requirements.txt
    

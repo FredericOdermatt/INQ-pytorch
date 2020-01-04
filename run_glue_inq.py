@@ -108,7 +108,7 @@ def train(args, train_dataset, model, tokenizer):
         {'params': [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
         ]
 
-    optimizer = inq.SGD(optimizer_grouped_parameters, lr=args.learning_rate)
+    optimizer = inq.SGD(optimizer_grouped_parameters, lr=args.learning_rate, weight_bits=args.nbits)
     inq_sched = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]
     if args.mode == "lin":
         inq_scheduler = inq.INQScheduler_lin(optimizer, inq_sched, strategy="pruning")	#pruning or rand
@@ -366,6 +366,8 @@ def main():
                         help="The output directory where the model predictions and checkpoints will be written.")
     parser.add_argument("--mode", default=None, type=str, required=True,
                         help="The type of quantization, possible strings: lin (linear), p2 (power of 2).")
+    parser.add_argument("--nbits", default=None, type=int, required=True,
+                        help="The number of bits to quantize to.")
     ## Other parameters
     parser.add_argument("--config_name", default="", type=str,
                         help="Pretrained config name or path if not the same as model_name")

@@ -48,10 +48,9 @@ class INQScheduler_lin(object):
                 if p.requires_grad is False:
                     group['ns'].append((0, 0))
                     continue
-    
-                s = torch.max(torch.abs(p.data)).item()           
-                n_1 = math.floor(math.log((4*s)/3 + eps, 2))		#added epsilon, so as not to take log of zero
-                n_2 = int(n_1 + 1 - (2**(group['weight_bits']-1))/2)
+                #s, n_1 and n_2 are not needed for linear quantization
+                n_1 = 0
+                n_2 = 0
                 group['ns'].append((n_1, n_2))
 
     def state_dict(self):

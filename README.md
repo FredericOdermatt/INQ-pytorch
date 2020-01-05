@@ -4,12 +4,81 @@ A PyTorch implementation of different Quantization Methods such as Incremental N
 ----
 #### Getting Glue Datasets
 
+A script for downloading the GLUE datasets can be found [here](https://github.com/nyu-mll/jiant/blob/master/scripts/download_glue_data.py), but is also included in our repo for convenience.
+
+Either copy the file from that URL or use
+`git clone https://github.com/FredericOdermatt/INQ-pytorch.git` where you will find [download_glue_data.py](download_glue_data.py).
+
+Paste the python file to wherever you want the folder glue_data to be built and execute `python download_glue_data.py`.
+
+----
 #### Installation for INQ and MBQ
 
-python3.6 -m pip3 install -U --user pip setuptools virtualenv
+This assumes the GLUE datasets are already available. (see above)
+
+To quantize on the LEONHARD Cluster from ETH after SSH-ing into the Cluster execute
+
+`module load python_gpu/3.7.4` to load python 3.7.4
+
+```
+git clone https://github.com/FredericOdermatt/INQ-pytorch.git (If not done before)
+git clone https://github.com/huggingface/transformers.git
+python -m pip install -U --user pip setuptools virtualenv
+python -m venv .inq_env --system-site-packages
+```
+
+After entering the virtual environment run
+   
+```
+pip install -e INQ-pytorch
+pip install -r INQ-pytorch/requirements.txt
+pip install -e transformers
+```
 
 #### Usage
 
+To apply quantization run run_glue_inq.py like this or use the provided [script](inq.sh)
+ ```
+python ./INQ-pytorch/run_glue_inq.py \
+        --model_type bert \
+        --model_name_or_path bert-base-uncased \
+        --task_name $taskname \
+        --mode $mode \
+        --nbits $nbits \
+        --do_train \
+        --do_eval \
+        --do_lower_case \
+        --data_dir $datadir \
+        --max_seq_length 128 \
+        --per_gpu_eval_batch_size=8 \
+        --per_gpu_train_batch_size=8 \
+        --learning_rate 2e-5 \
+        --num_train_epochs 9.0 \
+        --save_steps 100000 \
+        --output_dir $SCRATCH/quant/${taskname}${nbits}${$mode} \
+        --overwrite_output_dir
+```
+Options:
+taskname = [[cola,mnli,mnlimm,qnli,rte,sst-2,sts-b,wnli,mrpc,qqp]
+mode = [lin,p2,mb] (linear INQ, power of 2 INQ, alternating MultiBit quantization)
+nbits: any number between 1 and 8
+datadir: directory of GLUE datasets
+
+To quantize one task with all three quantization methods to all levels of precision we run this command.
+(Note: the following submits 24 jobs to the LSF System)
+
+```
+for quant in {lin,p2,mb} 
+> do 
+> for bits in {1..8} 
+> do
+> bsub -o $SCRATCH/quant/mrpc_${quant}quant${bits}bit/mrpc_${quant}quant${bits}bit.out -R "rusage[mem=8164,ngpus_excl_p=1]" -J mrpc${quant}${bits}bit -W 4:00 <<< "./inq.sh mrpc $quant $bits MRPC" 
+> done 
+> done
+
+```
+
+----
 #### Reproducing results from NLP-Architect (Q8BERT [[Paper]](https://arxiv.org/abs/1910.06188))
 
 This assumes the GLUE datasets are already available. (see above)

@@ -1,0 +1,18 @@
+python ./INQ-pytorch/run_glue_inq.py \
+	--model_type bert \
+	--model_name_or_path bert-base-uncased \
+	--task_name $1 \
+	--mode $2 \
+	--nbits $3 \
+	--do_train \
+	--do_eval \
+	--do_lower_case \
+	--data_dir ./glue_data/$4/ \
+	--max_seq_length 128 \
+	--per_gpu_eval_batch_size=8 \
+	--per_gpu_train_batch_size=8 \
+	--learning_rate 2e-5 \
+	--num_train_epochs 9.0 \
+	--save_steps 100000 \
+	--output_dir ./quant/$1_$2quant$3bit \
+	--overwrite_output_dir

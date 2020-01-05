@@ -1,7 +1,7 @@
 # Quantized BERT
 A PyTorch implementation of different Quantization Methods such as Incremental Network Quantization or Alternating Multibit Quantization to quantize the original BERT Model to 8 or less-than-8 bits.
 
-Our implementation is based on a fork from [INQ-pytorch](https://github.com/Mxbonn/INQ-pytorch.git)
+Our implementation is built upon a fork from [INQ-pytorch](https://github.com/Mxbonn/INQ-pytorch.git)
 
 ----
 #### Getting Glue Datasets

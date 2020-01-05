@@ -150,3 +150,8 @@ nlp_architect run transformer_glue \
  
  because of 
  `AttributeError: 'QuantizedBertLayer' object has no attribute 'is_decoder'` 
+ 
+ ----
+ #### Recorded Data
+ 
+ Recorded scores of our data can be found [here](measurements.xlsx)

@@ -114,7 +114,7 @@ def train(args, train_dataset, model, tokenizer):
         inq_scheduler = inq.INQScheduler_lin(optimizer, inq_sched, strategy="pruning")	#pruning or rand
     elif args.mode == "p2":
         inq_scheduler = inq.INQScheduler_p2(optimizer, inq_sched, strategy="pruning")
-    elif args.mode == "mbq":
+    elif args.mode == "mb":
         inq_scheduler = inq.INQScheduler_mbq(optimizer, inq_sched, strategy="pruning")
 
     #optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, eps=args.adam_epsilon)
@@ -138,6 +138,8 @@ def train(args, train_dataset, model, tokenizer):
 
     # Train!
     logger.info("***** Running training *****")
+    logger.info("  Quantization Mode = %s", args.mode)
+    logger.info("  Bits to quantize to = %d", args.nbits)
     logger.info("  Num examples = %d", len(train_dataset))
     logger.info("  Num Epochs = %d", args.num_train_epochs)
     logger.info("  Instantaneous batch size per GPU = %d", args.per_gpu_train_batch_size)
@@ -365,7 +367,7 @@ def main():
     parser.add_argument("--output_dir", default=None, type=str, required=True,
                         help="The output directory where the model predictions and checkpoints will be written.")
     parser.add_argument("--mode", default=None, type=str, required=True,
-                        help="The type of quantization, possible strings: lin (linear), p2 (power of 2).")
+                        help="The type of quantization, possible strings: lin (linear), p2 (power of 2), mb (multibit).")
     parser.add_argument("--nbits", default=None, type=int, required=True,
                         help="The number of bits to quantize to.")
     ## Other parameters

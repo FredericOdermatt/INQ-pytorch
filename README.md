@@ -6,6 +6,8 @@ Our implementation is built upon a fork from [INQ-pytorch](https://github.com/Mx
 ----
 #### Getting Glue Datasets
 
+NOTE: since training happens on the LEONHARD Cluster we recommend downloading the GLUE datasets directly to the cluster for convenience.
+
 [download_glue_data.py](download_glue_data.py) is a script to download all GLUE datasets from [here](https://github.com/nyu-mll/jiant/blob/master/scripts/download_glue_data.py), it is also included in our repo for convenience.
 
 Either copy the file from that URL or use
@@ -43,6 +45,8 @@ pip install -e transformers
 #### Usage
 
 To apply quantization run run_glue_inq.py like this or use the provided [script](inq.sh)
+
+NOTE: the below command will not run without a GPU (even on the local node on LEONHARD) and you will get the error `AssertionError: Found no NVIDIA driver on your system.` Submitting with bsub removes this error.
  ```
 python ./INQ-pytorch/run_glue_inq.py \
         --model_type bert \
@@ -77,7 +81,7 @@ for quant in {lin,p2,mb}
 > do 
 > for bits in {1..8} 
 > do
-> bsub -o $SCRATCH/quant/mrpc_${quant}quant${bits}bit/mrpc_${quant}quant${bits}bit.out -R "rusage[mem=8164,ngpus_excl_p=1]" -J mrpc${quant}${bits}bit -W 4:00 <<< "./inq.sh mrpc $quant $bits MRPC" 
+> bsub -o $SCRATCH/outputfile${quant}${bits}.out -R "rusage[mem=8164,ngpus_excl_p=1]" -J mrpc${quant}${bits}bit -W 4:00 <<< "./inq.sh mrpc $quant $bits MRPC" 
 > done 
 > done
 

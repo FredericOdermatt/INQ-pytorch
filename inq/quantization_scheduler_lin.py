@@ -92,10 +92,10 @@ class INQScheduler_lin(object):
         """Quantize a single weight using Linear quantization.
         """
         
-        scale = 2**-6
+        scale = 2**-(weight_bits-2)
         k = math.floor(weight/scale + .5)
         unclamped_q_weight = scale * k
-        quantized_weight = max(min(unclamped_q_weight, 127./64.), -127./64.)
+        quantized_weight = max(min(unclamped_q_weight, (2^(weight_bits)-1)./2^(weight_bits -1).), -(2^(weight_bits)-1)./2^(weight_bits -1).)
 
         """Quantize a single weight using the INQ quantization scheme.
         """

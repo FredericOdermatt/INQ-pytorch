@@ -120,7 +120,7 @@ class SGD(Optimizer):
                     else:
                         d_p = buf
 
-                d_p.mul_(group['Ts'][idx])
+                d_p.mul_(group['Ts'][idx].cuda())
                 p.data.add_(-group['lr'], d_p)
 
         return loss

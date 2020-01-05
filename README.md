@@ -6,6 +6,8 @@ A PyTorch implementation of different Quantization Methods such as Incremental N
 
 #### Installation for INQ and MBQ
 
+python3.6 -m pip3 install -U --user pip setuptools virtualenv
+
 #### Usage
 
 #### Reproducing results from NLP-Architect (Q8BERT [[Paper]](https://arxiv.org/abs/1910.06188))
@@ -16,9 +18,7 @@ To train on the LEONHARD Cluster from ETH after SSH-ing into the Cluster execute
 
 `module load python_gpu/3.6.1` to load python 3.6.1
 
-<!---
-(python3.6 -m pip3 install -U --user pip setuptools virtualenv) #necessary for first time virtualenv setup
--->
+`python3.6 -m pip3 install -U --user pip setuptools virtualenv`
 
 `python3.6 -m venv .env --system-site-packages` to create a virtual environment, the option --system-site-packages is key
 

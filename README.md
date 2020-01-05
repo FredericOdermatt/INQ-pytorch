@@ -6,6 +6,8 @@ Our implementation is built upon a fork from [INQ-pytorch](https://github.com/Mx
 ----
 #### Getting Glue Datasets
 
+NOTE: since training happens on the LEONHARD Cluster we recommend downloading the GLUE datasets directly to the cluster for convenience.
+
 [download_glue_data.py](download_glue_data.py) is a script to download all GLUE datasets from [here](https://github.com/nyu-mll/jiant/blob/master/scripts/download_glue_data.py), it is also included in our repo for convenience.
 
 Either copy the file from that URL or use

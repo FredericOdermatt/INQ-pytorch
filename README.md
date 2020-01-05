@@ -1,61 +1,61 @@
-# QuantizedBERT_DeepLearningProject
+# Quantized BERT
+A PyTorch implementation of different Quantization Methods such as Incremental Network Quantization or Alternating Multibit Quantization to quantize the original BERT Model to 8 or less-than-8 bits.
 
-Install from source (Github)
-git clone https://github.com/NervanaSystems/nlp-architect.git
-cd nlp-architect
-pip install -e .  # install in developer mode
+----
+#### Getting Glue Datasets
 
-implement quantized bert, if error:
+#### Installation for INQ and MBQ
 
-  pip install python-dateutil==2.6
-  
-  pip uninstall transformers 
-  
-  pip install transformers==2.0
-  
-  possibly pip install wheel & tensorflow==2.0.0b0
+#### Usage
 
-TRAINING
+#### Reproducing results from NLP-Architect (Q8BERT [[Paper]](https://arxiv.org/abs/1910.06188))
 
-create train.sh
-new:
-nlp-train transformer_glue \
-    --task_name mrpc \
-    --model_name_or_path bert-base-uncased \
-    --model_type quant_bert \
-    --learning_rate 2e-5 \
-    --output_dir /tmp/mrpc-8bit \
-    --evaluate_during_training \
-    --data_dir /path/to/MRPC \
-    --do_lower_case
-    
-old:
+This assumes the GLUE datasets are already available. (see above)
+
+To train on the LEONHARD Cluster from ETH after SSH-ing into the Cluster execute
+
+`module load python_gpu/3.6.1` to load python 3.6.1
+
+<!---
+(python3.6 -m pip3 install -U --user pip setuptools virtualenv) #necessary for first time virtualenv setup
+-->
+
+`python3.6 -m venv .env --system-site-packages` to create a virtual environment, the option --system-site-packages is key
+
+After entering the virtual environment `pip install nlp-architect==0.5.1` and `pip install torchvision==0.3.0`
+
+NOTE: make sure to install version nlp-architect==0.5.1, not the newly released version 0.5.2
+
+To start training a task use
+
+```
 nlp_architect train transformer_glue \
-    --task_name cola \
+    --task_name $taskname \
     --model_name_or_path bert-base-uncased \
     --model_type quant_bert \
     --learning_rate 2e-5 \
     --num_train_epochs 1 \
     --output_dir tmp/cola-8bit \
     --evaluate_during_training \
-    --data_dir glue_data/CoLA \
+    --data_dir $gluedata \
     --do_lower_case \
     --overwrite_output_dir
+```
+where $taskname can take values in [cola,mnli,mnlimm,qnli,rte,sst-2,sts-b,wnli,mrpc,qqp] and $gluedata specifies the directory where the GLUE datasets are saved.
 
-EVALUATION
+This long command can also be found in the provided [script](nlp-architect.sh).
 
-create eval.sh
-new:
-nlp-inference transformer_glue \
-    --model_path /tmp/mrpc-8bit \
-    --task_name mrpc \
-    --model_type quant_bert \
-    --output_dir /tmp/mrpc-8bit \
-    --data_dir /path/to/MRPC \
-    --do_lower_case \
-    --overwrite_output_dir
+For Job Submission to the LFR system execute
+```
+bsub -o $SCRATCH/test/wnlitest.out -R "rusage[mem=8164,ngpus_excl_p=1]" -J wnlitest -W 4:00 < nlp-architect.sh
+```
+The shortest trainings we recorded were for WNLI and STS-B 1 epoch with under 10 minutes. The longest training we recorded was for QQP 3 epoc with around 870 hours. In general all tasks except MNLI, MNLIMM, QNLI and QQP will train reasonably fast (<4h) if trained with just 1 epoch on Leonhard.
 
-old:
+With the `--evaluate_during_training` flag the result of the fine-tuned model will be reported in eval_results.txt when training has finished.
+
+Any trained model can be evaluated using (in this example for CoLA)
+
+```
 nlp_architect run transformer_glue \
     --model_path tmp/cola-8bit \
     --task_name cola \
@@ -65,100 +65,9 @@ nlp_architect run transformer_glue \
     --do_lower_case \
     --overwrite_output_dir \
     --evaluate
-    
-# Training on a cluster
+```
 
-rsync -Pav ~/deeplearning/glue_data/ odermafr@euler.ethz.ch:/cluster/home/odermafr/glue_data
-
-ssh -Y odermafr@euler.ethz.ch
-
-NOTE: using module avail python you will see, that before this command python/3.7.1 is not available, however after loading python3.6.0 using module avail python again we see new higher options
-
-module load python/3.6.0 (these commands need to be redone on every startup of the euler)
-module load python/3.6.1 (you can only load python 3.6.1 once you have loaded python 3.6.0 (I dont know why)
-module unload python/3.6.0
-
-(python3.6 -m pip3 install -U --user pip setuptools virtualenv) #necessary for first time virtualenv setup
-
-python3.6 -m venv .env --system-site-packages    # --system-site-packages seems to be key to not get version collisions
-
-source .env/bin/activate
-
-pip install nlp-architect==0.5.1
-
-pip install (--user) torchvision==0.3.0 # necessary
-
-(pip install (--user) torch==1.3.1) #probably not necessary, rerun pip install nlp-architect==0.5.1 to check if necessary
-
-nano v0.5.1trainCoLA.sh
-
-INSERT THIS TEXT
-
-    nlp_architect train transformer_glue \
-        --task_name cola \
-        --model_name_or_path bert-base-uncased \
-        --model_type quant_bert \
-        --learning_rate 2e-5 \
-        --num_train_epochs 1 \
-        --output_dir ~/tmp/cola-8bit \
-        --evaluate_during_training \
-        --data_dir ~/glue_data/CoLA \
-        --do_lower_case
- 
- chmod 777 v0.5.1trainCoLA.sh
- 
- ./v0.5.1trainCoLA.sh
- 
- or as a job f.ex:
- 
- bsub -W 24:00 -n 1 -R "rusage[mem=8196]" < 0.5.1trainRTE.sh
- 
  **Why nlp-architect==0.5.2 currently not used**
  
  because of 
  `AttributeError: 'QuantizedBertLayer' object has no attribute 'is_decoder'` 
-
- 
- # Capabilities of nlp-architect
- 
- v.0.5.1
- run
- - nlp_architect
- - nlp_architect train
- - nlp_architect train transformer_glue -h
- 
- for different levels of help
- 
- ALL FLAGS:
- 
- nlp_architect train transformer_glue  
-                                            --task_name TASK_NAME    
-                                            --data_dir DATA_DIR --model_type  
-                                            {bert,quant_bert,xlnet,xlm}  
-                                            --output_dir OUTPUT_DIR  
-                                            [--tokenizer_name TOKENIZER_NAME]  
-                                            [--max_seq_length MAX_SEQ_LENGTH]  
-                                            [--cache_dir CACHE_DIR]  
-                                            [--do_lower_case]  
-                                            [--per_gpu_eval_batch_size PER_GPU_EVAL_BATCH_SIZE]  
-                                            [--no_cuda]  
-                                            [--overwrite_output_dir]  
-                                            [--overwrite_cache]  
-                                            --model_name_or_path  
-                                            MODEL_NAME_OR_PATH  
-                                            [--config_name CONFIG_NAME]  
-                                            [--evaluate_during_training]  
-                                            [--per_gpu_train_batch_size PER_GPU_TRAIN_BATCH_SIZE]  
-                                            [--gradient_accumulation_steps GRADIENT_ACCUMULATION_STEPS]  
-                                            [--learning_rate LEARNING_RATE]  
-                                            [--weight_decay WEIGHT_DECAY]  
-                                            [--adam_epsilon ADAM_EPSILON]  
-                                            [--max_grad_norm MAX_GRAD_NORM]  
-                                            [--num_train_epochs NUM_TRAIN_EPOCHS]  
-                                            [--max_steps MAX_STEPS]  
-                                            [--warmup_steps WARMUP_STEPS]  
-                                            [--logging_steps LOGGING_STEPS]  
-                                            [--save_steps SAVE_STEPS]  
-                                            [--eval_all_checkpoints]  
-                                            [--seed SEED]
-

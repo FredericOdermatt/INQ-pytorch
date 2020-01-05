@@ -1,13 +1,14 @@
 # Quantized BERT
 A PyTorch implementation of different Quantization Methods such as Incremental Network Quantization or Alternating Multibit Quantization to quantize the original BERT Model to 8 or less-than-8 bits.
 
+Our implementation is based on a fork from [INQ-pytorch](https://github.com/Mxbonn/INQ-pytorch.git)
 ----
 #### Getting Glue Datasets
 
-A script for downloading the GLUE datasets can be found [here](https://github.com/nyu-mll/jiant/blob/master/scripts/download_glue_data.py), but is also included in our repo for convenience.
+[download_glue_data.py](download_glue_data.py) is a script to download all GLUE datasets from [here](https://github.com/nyu-mll/jiant/blob/master/scripts/download_glue_data.py), it is also included in our repo for convenience.
 
 Either copy the file from that URL or use
-`git clone https://github.com/FredericOdermatt/INQ-pytorch.git` where you will find [download_glue_data.py](download_glue_data.py).
+[download_glue_data.py](download_glue_data.py).
 
 Paste the python file to wherever you want the folder glue_data to be built and execute `python download_glue_data.py`.
 
@@ -20,8 +21,11 @@ To quantize on the LEONHARD Cluster from ETH after SSH-ing into the Cluster exec
 
 `module load python_gpu/3.7.4` to load python 3.7.4
 
+Then either copy this folder to LEONHARD or execute on LEONHARD 
+`git clone https://github.com/FredericOdermatt/INQ-pytorch.git` for convenience.
+
+Then execute
 ```
-git clone https://github.com/FredericOdermatt/INQ-pytorch.git (If not done before)
 git clone https://github.com/huggingface/transformers.git
 python -m pip install -U --user pip setuptools virtualenv
 python -m venv .inq_env --system-site-packages
@@ -59,10 +63,10 @@ python ./INQ-pytorch/run_glue_inq.py \
         --overwrite_output_dir
 ```
 Options:
-taskname = [[cola,mnli,mnlimm,qnli,rte,sst-2,sts-b,wnli,mrpc,qqp]
-mode = [lin,p2,mb] (linear INQ, power of 2 INQ, alternating MultiBit quantization)
-nbits: any number between 1 and 8
-datadir: directory of GLUE datasets
+* `taskname` = [cola,mnli,mnli-mm,qnli,rte,sst-2,sts-b,wnli,mrpc,qqp]
+* `mode` = [lin,p2,mb] (linear INQ, power of 2 INQ, alternating MultiBit quantization)
+* `nbits`: any number between 1 and 8
+* `datadir`: directory of GLUE datasets
 
 To quantize one task with all three quantization methods to all levels of precision we run this command.
 (Note: the following submits 24 jobs to the LSF System)
@@ -110,7 +114,8 @@ nlp_architect train transformer_glue \
     --do_lower_case \
     --overwrite_output_dir
 ```
-where $taskname can take values in [cola,mnli,mnlimm,qnli,rte,sst-2,sts-b,wnli,mrpc,qqp] and $gluedata specifies the directory where the GLUE datasets are saved.
+* `$taskname` can take values in [cola,mnli,mnli-mm,qnli,rte,sst-2,sts-b,wnli,mrpc,qqp]
+* `$gluedata` specifies the directory where the GLUE datasets are saved.
 
 This long command can also be found in the provided [script](nlp-architect.sh).
 
@@ -136,7 +141,7 @@ nlp_architect run transformer_glue \
     --evaluate
 ```
 
- **Why nlp-architect==0.5.2 currently not used**
+ Why nlp-architect==0.5.2 is currently not used:
  
  because of 
  `AttributeError: 'QuantizedBertLayer' object has no attribute 'is_decoder'` 

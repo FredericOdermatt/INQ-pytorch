@@ -1,10 +1,12 @@
 # Quantized BERT
 A PyTorch implementation of different Quantization Methods such as Incremental Network Quantization or Alternating Multibit Quantization to quantize the original BERT Model to 8 or less-than-8 bits.
 
-Our implementation is based on a fork from [INQ-pytorch](https://github.com/Mxbonn/INQ-pytorch.git)
+Our implementation is built upon a fork from [INQ-pytorch](https://github.com/Mxbonn/INQ-pytorch.git)
 
 ----
 #### Getting Glue Datasets
+
+NOTE: since training happens on the LEONHARD Cluster we recommend downloading the GLUE datasets directly to the cluster for convenience.
 
 [download_glue_data.py](download_glue_data.py) is a script to download all GLUE datasets from [here](https://github.com/nyu-mll/jiant/blob/master/scripts/download_glue_data.py), it is also included in our repo for convenience.
 

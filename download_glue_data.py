@@ -1,4 +1,4 @@
-''' Script for downloading all GLUE data.
+''' Script for downloading all GLUE data. All credit to https://github.com/nyu-mll/jiant/blob/master/scripts/download_glue_data.py
 
 Note: for legal reasons, we are unable to host MRPC.
 You can either use the version hosted by the SentEval team, which is already tokenized, 

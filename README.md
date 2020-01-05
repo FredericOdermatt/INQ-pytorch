@@ -79,7 +79,7 @@ for quant in {lin,p2,mb}
 > do 
 > for bits in {1..8} 
 > do
-> bsub -o $SCRATCH/quant/mrpc_${quant}quant${bits}bit/mrpc_${quant}quant${bits}bit.out -R "rusage[mem=8164,ngpus_excl_p=1]" -J mrpc${quant}${bits}bit -W 4:00 <<< "./inq.sh mrpc $quant $bits MRPC" 
+> bsub -o $SCRATCH/outputfile${quant}${bits}.out -R "rusage[mem=8164,ngpus_excl_p=1]" -J mrpc${quant}${bits}bit -W 4:00 <<< "./inq.sh mrpc $quant $bits MRPC" 
 > done 
 > done
 

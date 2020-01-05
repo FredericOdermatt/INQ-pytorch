@@ -45,6 +45,8 @@ pip install -e transformers
 #### Usage
 
 To apply quantization run run_glue_inq.py like this or use the provided [script](inq.sh)
+
+NOTE: the below command will not run without a GPU (even on the local node on LEONHARD) and you will get the error `AssertionError: Found no NVIDIA driver on your system.` Submitting with bsub removes this error.
  ```
 python ./INQ-pytorch/run_glue_inq.py \
         --model_type bert \
